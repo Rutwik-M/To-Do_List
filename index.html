@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SereneList - Your Elegant To-Do</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"
+            integrity="sha512-Eezs+g9Lq4TCCq0wae01s9PuNWzHYoCMkE97e2qdkYthpI0pzC3UGB03lgEHn2XM85hDOUF6qgqqszs+iXU4UA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body class="preload"> <header class="app-header">
+        <div class="header-content">
+            <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open Categories Menu">
+                <i class='bx bx-menu'></i>
+            </button>
+
+            <div class="logo">
+                <i class='bx bx-check-square'></i>
+                <span class="logo-text">SereneList</span> </div>
+            <nav class="main-nav">
+                <a href="#" class="nav-link active">Dashboard</a>
+                <a href="#" class="nav-link">Settings</a>
+            </nav>
+            <div class="header-actions">
+                 <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
+                     <i class='bx bx-moon'></i>
+                 </button>
+                <div class="user-profile">
+                    <i class='bx bxs-user-circle'></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <div class="app-wrapper">
+        <div class="app-container">
+            <aside id="sidebar" class="sidebar"> <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="Close Categories Menu">
+                     <i class='bx bx-x'></i>
+                </button>
+                <div class="sidebar-header">
+                    <h2>Categories</h2>
+                </div>
+                <ul id="category-list" class="category-list">
+                    </ul>
+            </aside>
+
+            <main class="main-content">
+                 <header class="main-header">
+                    <h1 id="current-category-title" class="fade-in">Category Name</h1> <div class="progress-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+                    <span id="progress-text" class="progress-text fade-in">0% Complete</span>
+                </header>
+
+                <div class="welcome-message" id="welcome-message">
+                    Loading greeting...
+                </div>
+
+                <div class="add-task-form">
+                    <input type="text" id="new-task-input" placeholder="What needs doing today?">
+                     <button id="add-task-btn" class="add-btn" aria-label="Add Task">
+                        <i class='bx bx-plus'></i> <span>Add</span>
+                    </button>
+                </div>
+
+                <div class="task-list-container">
+                     <div id="empty-state" class="empty-state" style="display: none;">
+                        <i class='bx bx-coffee-togo bx-lg'></i>
+                        <p>All clear! Add a task to get started.</p>
+                    </div>
+                    <ul id="task-list" class="task-list">
+                        </ul>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <p>&copy; <span id="current-year"></span> SereneList. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
