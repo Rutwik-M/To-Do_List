@@ -44,8 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentCategoryTitleEl = document.getElementById('current-category-title');
     const newTaskInputEl = document.getElementById('new-task-input');
     const addTaskBtnEl = document.getElementById('add-task-btn');
-    const themeToggleBtn = document.getElementById('theme-toggle');
-    const themeIcon = themeToggleBtn?.querySelector('i'); // Use optional chaining
+    const themeToggleBtn = document.getElementById('theme-toggle'); // Header theme toggle
+    const themeIcon = themeToggleBtn?.querySelector('i');
     const progressBarEl = document.getElementById('progress-bar');
     const progressTextEl = document.getElementById('progress-text');
     const welcomeMessageEl = document.getElementById('welcome-message');
@@ -58,6 +58,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebarEl = document.getElementById('sidebar');
     const sidebarOverlayEl = document.getElementById('sidebar-overlay');
     const sidebarCloseBtnEl = document.getElementById('sidebar-close-btn');
+
+    // View Switching Elements
+    const viewContainerEl = document.getElementById('view-container');
+    const mainNavEl = document.getElementById('main-nav'); // Nav container
+    const dashboardViewEl = document.getElementById('dashboard-view');
+    const settingsViewEl = document.getElementById('settings-view');
+
+    // Settings View Elements
+    const themeToggleSettingsBtn = document.getElementById('theme-toggle-settings'); // Settings theme toggle
+    const themeIconSettings = themeToggleSettingsBtn?.querySelector('i');
+    const currentThemeNameEl = document.getElementById('current-theme-name');
+    const clearAllTasksBtn = document.getElementById('clear-all-tasks-btn');
+    const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
 
 
     // --- Core Functions ---
@@ -78,12 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
      * Updates the main heading with the current category name.
      */
     function updateCategoryTitle() {
-        if (!currentCategoryTitleEl) return; // Guard clause
+        if (!currentCategoryTitleEl) return;
         const currentCategory = categories.find(cat => cat.id === currentCategoryId);
         currentCategoryTitleEl.textContent = currentCategory ? currentCategory.name : "Tasks";
-        // Optional: Add animation trigger if needed
-        // currentCategoryTitleEl.classList.add('title-updated');
-        // setTimeout(() => currentCategoryTitleEl.classList.remove('title-updated'), 300);
     }
 
     /**
@@ -91,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {Array} currentTasks - The tasks currently displayed.
      */
     function updateProgressBar(currentTasks) {
-        if (!progressBarEl || !progressTextEl) return; // Guard clauses
+        if (!progressBarEl || !progressTextEl) return;
 
         const totalTasks = currentTasks.length;
         if (totalTasks === 0) {
@@ -102,9 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const completedTasks = currentTasks.filter(task => task.completed).length;
         const percentage = Math.round((completedTasks / totalTasks) * 100);
 
-        // Delay width update slightly for smoother visual perception after render
         requestAnimationFrame(() => {
-             requestAnimationFrame(() => { // Double rAF helps ensure styles are flushed
+             requestAnimationFrame(() => {
                 progressBarEl.style.width = `${percentage}%`;
              });
         });
@@ -124,9 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (hour < 21) { greeting = "Good evening! Time to wrap up or wind down?"; }
         else { greeting = "Good night! Hope you had a productive day."; }
         welcomeMessageEl.textContent = greeting;
-        // Ensure fade-in happens after text is set
-        welcomeMessageEl.style.opacity = 0; // Start hidden if using JS fade
-        setTimeout(() => { welcomeMessageEl.style.opacity = 1; }, 50); // Fade in shortly after
+        // Trigger CSS fade-in
+        welcomeMessageEl.style.opacity = 1;
     }
 
     /**
@@ -144,16 +152,14 @@ document.addEventListener('DOMContentLoaded', () => {
      * Renders the category list in the sidebar, including task counts and active state.
      */
     function renderCategories() {
-        if (!categoryListEl) return; // Guard clause
+        if (!categoryListEl) return;
         categoryListEl.innerHTML = '';
         const taskCounts = getTaskCounts();
 
         categories.forEach(category => {
             const li = document.createElement('li');
             li.dataset.categoryId = category.id;
-            if (category.id === currentCategoryId) {
-                li.classList.add('active');
-            }
+            if (category.id === currentCategoryId) { li.classList.add('active'); }
 
             const nameSpan = document.createElement('span');
             nameSpan.classList.add('category-name');
@@ -168,9 +174,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             li.addEventListener('click', () => {
                 currentCategoryId = category.id;
-                renderCategories(); // Re-render categories for active state/counts
-                renderTasks();      // Render tasks for the new category
-                closeMobileSidebar(); // Close sidebar after selecting a category on mobile
+                renderCategories();
+                renderTasks();
+                closeMobileSidebar(); // Close sidebar after selection
             });
             categoryListEl.appendChild(li);
         });
@@ -182,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * updates the progress bar, and initializes drag-and-drop.
      */
     function renderTasks() {
-        if (!taskListEl || !emptyStateEl) return; // Guard clauses
+        if (!taskListEl || !emptyStateEl) return;
 
         taskListEl.innerHTML = ''; // Clear previous tasks
 
@@ -204,17 +210,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     li.classList.add('completed');
                 }
 
-                // Staggered animation via style delay (CSS handles animation)
-                // Note: CSS needs an animation definition for .task-item for this to work visually
-                // e.g., animation: task-fade-in 0.4s ease forwards;
-                // If only using JS opacity/transform:
+                // Staggered animation via style delay
                 li.style.opacity = 0;
                 li.style.transform = 'translateY(10px)';
                 setTimeout(() => {
                    li.style.opacity = 1;
                    li.style.transform = 'translateY(0)';
                    li.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
-                }, index * 60); // Slightly increased delay
+                }, index * 60); // Stagger delay
 
                 // Checkbox
                 const checkbox = document.createElement('input');
@@ -266,21 +269,26 @@ document.addEventListener('DOMContentLoaded', () => {
             sortableInstance = null;
         }
 
-        // Only initialize SortableJS if the list element exists AND it's currently visible/populated
-        if (taskListEl && listShouldBeVisible && typeof Sortable !== 'undefined') { // Add check for Sortable
-            sortableInstance = new Sortable(taskListEl, {
-                animation: 150, // ms animation speed
-                ghostClass: 'sortable-ghost', // Class name for the drop placeholder
-                chosenClass: 'sortable-chosen', // Class name for the chosen item
-                dragClass: 'sortable-drag', // Class name for the dragging item
-                onEnd: function (evt) {
-                    // evt.oldIndex — element's old index within parent
-                    // evt.newIndex — element's new index within parent
-                    if (evt.oldIndex !== evt.newIndex) { // Only update if position actually changed
-                         updateTaskOrder(evt.oldIndex, evt.newIndex);
-                    }
-                },
-            });
+        // Only initialize SortableJS if the list element exists AND it's currently visible/populated AND Sortable is loaded
+        if (taskListEl && listShouldBeVisible && typeof Sortable !== 'undefined') {
+            try { // Add try...catch for extra safety
+                sortableInstance = new Sortable(taskListEl, {
+                    animation: 150, // ms animation speed
+                    ghostClass: 'sortable-ghost', // Class name for the drop placeholder
+                    chosenClass: 'sortable-chosen', // Class name for the chosen item
+                    dragClass: 'sortable-drag', // Class name for the dragging item
+                    onEnd: function (evt) {
+                        // evt.oldIndex — element's old index within parent
+                        // evt.newIndex — element's new index within parent
+                        if (evt.oldIndex !== evt.newIndex) { // Only update if position actually changed
+                             updateTaskOrder(evt.oldIndex, evt.newIndex);
+                        }
+                    },
+                });
+            } catch (error) {
+                console.error("Error initializing SortableJS:", error);
+                // Handle error appropriately, maybe disable drag-and-drop
+            }
         }
     }
 
@@ -309,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 taskToUpdate.order = index + 1; // Re-assign order starting from 1
             }
         });
-        // Data model is updated, SortableJS handled the visual DOM change.
+        // Data model is updated. SortableJS handled the visual DOM change.
     }
 
 
@@ -319,14 +327,13 @@ document.addEventListener('DOMContentLoaded', () => {
      * Adds a new task based on the input field value.
      */
     function addTask() {
-        if (!newTaskInputEl) return; // Guard clause
+        if (!newTaskInputEl) return;
         const taskText = newTaskInputEl.value.trim();
         if (taskText === '') {
-            // Optional: Add feedback like shaking the input
              newTaskInputEl.focus();
-             // Example: Add a temporary shake class
+             // Add shake animation class
              newTaskInputEl.classList.add('input-error-shake');
-             setTimeout(() => newTaskInputEl.classList.remove('input-error-shake'), 500); // Match CSS animation duration
+             setTimeout(() => newTaskInputEl.classList.remove('input-error-shake'), 500);
             return;
         }
 
@@ -339,12 +346,12 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryId: currentCategoryId,
             text: taskText,
             completed: false,
-            order: maxOrder + 1 // Assign the next available order number
+            order: maxOrder + 1
         };
 
         tasks.push(newTask);
         newTaskInputEl.value = ''; // Clear input field
-        renderTasks(); // Re-render tasks to show the new one (includes progress update)
+        renderTasks(); // Re-render tasks to show the new one
         renderCategories(); // Re-render categories to update task counts
     }
 
@@ -356,13 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const task = tasks.find(t => t.id === taskId);
         if (task) {
             task.completed = !task.completed;
-            // Find the corresponding list item to add/remove animation class if desired
-            const taskItem = taskListEl?.querySelector(`li.task-item[data-task-id="${taskId}"]`);
-            if(taskItem){
-                // Optionally add a class for CSS transition feedback
-                // taskItem.classList.add('task-toggled');
-                // setTimeout(()=> taskItem.classList.remove('task-toggled'), 300);
-            }
             renderTasks(); // Re-render tasks (updates style, progress bar)
             renderCategories(); // Re-render categories (updates counts)
         }
@@ -376,25 +376,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const taskItem = taskListEl?.querySelector(`li.task-item[data-task-id="${taskId}"]`);
 
         if(taskItem) {
-             // Apply animation styles directly or add a class
+             // Apply animation styles
              taskItem.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out, margin-bottom 0.3s ease-out, padding 0.3s ease-out, height 0.3s ease-out';
              taskItem.style.opacity = '0';
              taskItem.style.transform = 'translateX(-30px)';
+             // Animate height/margins for smoother collapse
              taskItem.style.marginBottom = '0';
              taskItem.style.paddingTop = '0';
              taskItem.style.paddingBottom = '0';
              taskItem.style.height = '0';
-             // taskItem.style.borderWidth = '0'; // If borders interfere
 
-             // Wait for animation to complete before removing data and re-rendering
+             // Wait for animation before removing data and re-rendering
              setTimeout(() => {
                  tasks = tasks.filter(t => t.id !== taskId);
-                 // Note: Re-calculating order after deletion might be desired in a real app
-                 renderTasks();      // Re-render tasks (updates list, progress)
-                 renderCategories(); // Re-render categories (updates counts)
-            }, 300); // Match timeout to CSS transition duration
+                 renderTasks();      // Re-render tasks
+                 renderCategories(); // Re-render categories
+            }, 300); // Match CSS transition duration
         } else {
-            // Fallback if item not found (e.g., deleted very quickly)
+            // Fallback if item not found
             tasks = tasks.filter(t => t.id !== taskId);
             renderTasks();
             renderCategories();
@@ -408,39 +407,43 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function toggleTheme() {
         bodyEl.classList.toggle('dark-theme');
-        updateThemeIcon(); // Update the button icon
-        // Save preference to localStorage
-        localStorage.setItem('theme', bodyEl.classList.contains('dark-theme') ? 'dark' : 'light');
+        const isDarkMode = bodyEl.classList.contains('dark-theme');
+        localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        updateThemeIconsAndText(isDarkMode); // Update all relevant UI elements
     }
 
     /**
-     * Updates the theme toggle button icon based on the current theme.
+     * Updates all theme-related icons and text elements.
+     * @param {boolean} isDarkMode - Whether dark mode is currently active.
      */
-     function updateThemeIcon() {
-        if (!themeIcon) return; // Guard clause
-        if (bodyEl.classList.contains('dark-theme')) {
-            themeIcon.classList.remove('bx-moon');
-            themeIcon.classList.add('bx-sun');
-            themeToggleBtn.setAttribute('aria-label', 'Switch to Light Theme');
-        } else {
-            themeIcon.classList.remove('bx-sun');
-            themeIcon.classList.add('bx-moon');
-            themeToggleBtn.setAttribute('aria-label', 'Switch to Dark Theme');
-        }
-     }
+    function updateThemeIconsAndText(isDarkMode) {
+        const themeName = isDarkMode ? 'Dark' : 'Light';
+        const moonIconClass = 'bx-moon';
+        const sunIconClass = 'bx-sun';
+        const newIconClass = `bx ${isDarkMode ? sunIconClass : moonIconClass}`;
+        const newAriaLabel = `Switch to ${isDarkMode ? 'Light' : 'Dark'} Theme`;
+
+        // Update header button
+        if (themeIcon) { themeIcon.className = newIconClass; }
+        if (themeToggleBtn) { themeToggleBtn.setAttribute('aria-label', newAriaLabel); }
+
+        // Update settings button
+        if (themeIconSettings) { themeIconSettings.className = newIconClass; }
+        if (themeToggleSettingsBtn) { themeToggleSettingsBtn.setAttribute('aria-label', newAriaLabel); }
+
+        // Update settings text
+        if (currentThemeNameEl) { currentThemeNameEl.textContent = themeName; }
+    }
 
     /**
      * Applies the theme preference saved in localStorage on page load.
      */
     function applySavedTheme() {
         const savedTheme = localStorage.getItem('theme');
-        // Set class based on saved theme or default to light
-        if (savedTheme === 'dark') {
-            bodyEl.classList.add('dark-theme');
-        } else {
-            bodyEl.classList.remove('dark-theme'); // Ensure light if not dark
-        }
-         updateThemeIcon(); // Set the correct icon on initial load
+        const isDarkMode = savedTheme === 'dark';
+        if (isDarkMode) { bodyEl.classList.add('dark-theme'); }
+        else { bodyEl.classList.remove('dark-theme'); }
+        updateThemeIconsAndText(isDarkMode); // Set correct icons/text on load
     }
 
     // --- Mobile Sidebar ---
@@ -452,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (sidebarEl && sidebarOverlayEl) {
             sidebarEl.classList.add('active');
             sidebarOverlayEl.classList.add('active');
-            bodyEl.style.overflow = 'hidden'; // Prevent background scroll when menu is open
+            bodyEl.style.overflow = 'hidden'; // Prevent background scroll
         }
     }
 
@@ -467,8 +470,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- View Switching ---
+
+    /**
+     * Switches the visible view between Dashboard and Settings using CSS class.
+     * @param {string} viewName - The name of the view to switch to ('dashboard' or 'settings').
+     */
+    function switchView(viewName) {
+        if (!viewContainerEl || !mainNavEl) return;
+
+        const targetView = viewName === 'settings' ? settingsViewEl : dashboardViewEl;
+        const otherView = viewName === 'settings' ? dashboardViewEl : settingsViewEl;
+
+        // Update Nav Link Active State
+        mainNavEl.querySelectorAll('.nav-link').forEach(link => {
+            link.classList.toggle('active', link.dataset.view === viewName);
+        });
+
+        // Toggle active class on container for CSS flip animation
+        if (viewName === 'settings') {
+            viewContainerEl.classList.add('settings-active');
+            // Ensure settings view is not display:none (handled by CSS transform now)
+            // if (settingsViewEl) settingsViewEl.classList.remove('is-hidden'); // May not be needed if CSS handles visibility via transform
+        } else { // Switching back to dashboard
+            viewContainerEl.classList.remove('settings-active');
+        }
+        console.log(`Switched view to: ${viewName}`);
+    }
+
+    // --- Settings Actions ---
+
+    /**
+     * Clears all tasks from the data array after confirmation.
+     */
+    function clearAllTasks() {
+        // Confirmation dialog
+        if (confirm("Are you sure you want to delete ALL tasks in ALL categories? This cannot be undone.")) {
+            tasks = []; // Clear the tasks array
+            // Optionally reset categories or keep them
+            currentCategoryId = categories[0]?.id || 1; // Reset to first category ID if categories exist
+            nextTaskId = 1; // Reset task ID counter
+            renderCategories(); // Update counts (will be 0)
+            renderTasks();      // Update task list (will show empty state)
+            alert("All tasks cleared.");
+        }
+    }
+
     // --- Event Listeners ---
-    // Ensure elements exist before adding listeners
+    // Add guards to prevent errors if elements don't exist
     if (addTaskBtnEl) {
         addTaskBtnEl.addEventListener('click', addTask);
     }
@@ -479,7 +528,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    if (themeToggleBtn) {
+    if (themeToggleBtn) { // Header toggle
         themeToggleBtn.addEventListener('click', toggleTheme);
     }
 
@@ -492,6 +541,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (sidebarOverlayEl) {
         sidebarOverlayEl.addEventListener('click', closeMobileSidebar);
+    }
+
+    // View Switching Listener (using event delegation on nav)
+    if (mainNavEl) {
+        mainNavEl.addEventListener('click', (e) => {
+            const targetLink = e.target.closest('.nav-link[data-view]'); // Ensure it has data-view
+            if (targetLink) {
+                e.preventDefault(); // Prevent default anchor behavior
+                switchView(targetLink.dataset.view);
+            }
+        });
+    }
+
+    // Settings View Listeners
+    if (themeToggleSettingsBtn) { // Settings toggle
+        themeToggleSettingsBtn.addEventListener('click', toggleTheme);
+    }
+    if (clearAllTasksBtn) {
+        clearAllTasksBtn.addEventListener('click', clearAllTasks);
+    }
+    if (backToDashboardBtn) {
+        backToDashboardBtn.addEventListener('click', () => switchView('dashboard'));
     }
 
 
@@ -517,16 +588,3 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp(); // Run the initialization sequence
 
 }); // End of DOMContentLoaded
-
-// Helper CSS class for input shake (add this to style.css if desired)
-/*
-@keyframes shake {
-  10%, 90% { transform: translateX(-1px); }
-  20%, 80% { transform: translateX(2px); }
-  30%, 50%, 70% { transform: translateX(-3px); }
-  40%, 60% { transform: translateX(3px); }
-}
-.input-error-shake {
-  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-}
-*/

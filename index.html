@@ -13,18 +13,20 @@
             integrity="sha512-Eezs+g9Lq4TCCq0wae01s9PuNWzHYoCMkE97e2qdkYthpI0pzC3UGB03lgEHn2XM85hDOUF6qgqqszs+iXU4UA=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
-<body class="preload"> <header class="app-header">
+<body class="preload">
+
+    <header class="app-header">
         <div class="header-content">
             <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Open Categories Menu">
                 <i class='bx bx-menu'></i>
             </button>
-
             <div class="logo">
                 <i class='bx bx-check-square'></i>
-                <span class="logo-text">SereneList</span> </div>
-            <nav class="main-nav">
-                <a href="#" class="nav-link active">Dashboard</a>
-                <a href="#" class="nav-link">Settings</a>
+                <span class="logo-text">SereneList</span>
+            </div>
+            <nav class="main-nav" id="main-nav">
+                <a href="#" class="nav-link active" data-view="dashboard">Dashboard</a>
+                <a href="#" class="nav-link" data-view="settings">Settings</a>
             </nav>
             <div class="header-actions">
                  <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
@@ -39,50 +41,82 @@
 
     <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
-    <div class="app-wrapper">
-        <div class="app-container">
-            <aside id="sidebar" class="sidebar"> <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="Close Categories Menu">
+    <div class="view-container" id="view-container">
+
+        <div class="app-container view" id="dashboard-view">
+            <aside id="sidebar" class="sidebar">
+                <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="Close Categories Menu">
                      <i class='bx bx-x'></i>
                 </button>
+                <div class="mobile-sidebar-logo-area">
+                    <div class="logo">
+                        <i class='bx bx-check-square'></i>
+                        <span>SereneList</span>
+                    </div>
+                </div>
                 <div class="sidebar-header">
                     <h2>Categories</h2>
                 </div>
                 <ul id="category-list" class="category-list">
+                    <li class="sidebar-separator"></li> <li class="sidebar-nav-item" data-view="settings"> <i class='bx bx-cog'></i> <span class="category-name">Settings</span> </li>
                     </ul>
             </aside>
 
             <main class="main-content">
                  <header class="main-header">
-                    <h1 id="current-category-title" class="fade-in">Category Name</h1> <div class="progress-container">
+                    <h1 id="current-category-title" class="fade-in">Category Name</h1>
+                    <div class="progress-container">
                         <div id="progress-bar" class="progress-bar"></div>
                     </div>
                     <span id="progress-text" class="progress-text fade-in">0% Complete</span>
                 </header>
-
-                <div class="welcome-message" id="welcome-message">
-                    Loading greeting...
-                </div>
-
+                <div class="welcome-message" id="welcome-message">Loading greeting...</div>
                 <div class="add-task-form">
                     <input type="text" id="new-task-input" placeholder="What needs doing today?">
                      <button id="add-task-btn" class="add-btn" aria-label="Add Task">
                         <i class='bx bx-plus'></i> <span>Add</span>
                     </button>
                 </div>
-
                 <div class="task-list-container">
                      <div id="empty-state" class="empty-state" style="display: none;">
                         <i class='bx bx-coffee-togo bx-lg'></i>
                         <p>All clear! Add a task to get started.</p>
                     </div>
-                    <ul id="task-list" class="task-list">
-                        </ul>
+                    <ul id="task-list" class="task-list"></ul>
                 </div>
             </main>
-        </div>
-    </div>
-
-    <footer class="app-footer">
+        </div><div class="settings-view view" id="settings-view"> <h2><i class='bx bxs-cog'></i> Application Settings</h2>
+            <div class="settings-content">
+                <p>Configure your application preferences here.</p>
+                <div class="setting-item">
+                    <h3>Theme</h3>
+                    <p>Select your preferred interface theme.</p>
+                    <div class="theme-options">
+                         <span>Current: </span>
+                         <button id="theme-toggle-settings" class="theme-toggle-btn" aria-label="Toggle Theme">
+                             <i class='bx bx-moon'></i>
+                         </button>
+                         <span id="current-theme-name">Light</span>
+                    </div>
+                </div>
+                <div class="setting-item">
+                    <h3>Account</h3>
+                    <p>Account details are not available in this demo.</p>
+                    <button class="btn-secondary" disabled>View Account</button>
+                </div>
+                <div class="setting-item">
+                    <h3>Data Management</h3>
+                    <p>Options for managing your task data.</p>
+                    <button id="clear-all-tasks-btn" class="btn-danger">Clear All Tasks (Demo)</button>
+                    <p class="warning-text">Warning: This action cannot be undone.</p>
+                </div>
+                 <div class="setting-item">
+                    <h3>About</h3>
+                    <p>SereneList v1.0 - Elegant To-Do App</p>
+                 </div>
+                <button class="btn-primary" id="back-to-dashboard-btn">Back to Dashboard</button>
+            </div>
+        </div> </div> <footer class="app-footer">
         <p>&copy; <span id="current-year"></span> SereneList. All rights reserved.</p>
     </footer>
 
