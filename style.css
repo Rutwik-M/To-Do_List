@@ -309,7 +309,7 @@ body.dark-theme .welcome-message { background-color: rgba(var(--accent-primary-d
 .setting-item .theme-options { display: flex; align-items: center; gap: var(--spacing-unit); }
 .setting-item .theme-options .theme-toggle-btn { font-size: 1.5rem; }
 .warning-text { font-size: 0.85rem; color: var(--accent-secondary); margin-top: calc(var(--spacing-unit)*0.5); }
-#back-to-dashboard-btn { margin-top: calc(var(--spacing-unit) * 2); display: block; margin-left: auto; margin-right: auto; }
+#back-to-dashboard-btn { margin-top: 0px !important; display: block; margin-left: auto; margin-right: auto; }
 
 /* --- App Footer --- */
 /* ... (Footer styles remain the same) ... */
