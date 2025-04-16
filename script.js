@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Mock Data ---
+    // Using let assuming you might want to modify these later (e.g., add/remove categories)
     let categories = [
         { id: 1, name: "Work" },
         { id: 2, name: "Personal" },
@@ -9,9 +10,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: 6, name: "Someday/Maybe" }
     ];
 
-    // Ensure initial data has sequential 'order' within each category
+    // Initial task data
     let tasks = [
-        // Category 1: Work
+        // ... (task data remains the same as provided) ...
+         // Category 1: Work
         { id: 1, categoryId: 1, text: "Prepare presentation slides", completed: false, order: 1 },
         { id: 2, categoryId: 1, text: "Reply to client emails", completed: false, order: 2 },
         { id: 6, categoryId: 1, text: "Team meeting at 10 AM", completed: false, order: 3 },
@@ -33,40 +35,37 @@ document.addEventListener('DOMContentLoaded', () => {
         // Category 6: Someday/Maybe - Starts empty
     ];
 
-    let currentCategoryId = 1; // Default to first category
-    // Ensure nextTaskId starts higher than any existing ID
+    let currentCategoryId = categories[0]?.id || 1; // Default to first category's ID
     let nextTaskId = (tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) : 0) + 1;
-    let sortableInstance = null; // To hold the SortableJS instance
+    let sortableInstance = null;
 
-    // --- DOM Elements ---
+    // --- DOM Elements (using const where elements shouldn't be reassigned) ---
     const categoryListEl = document.getElementById('category-list');
     const taskListEl = document.getElementById('task-list');
     const currentCategoryTitleEl = document.getElementById('current-category-title');
     const newTaskInputEl = document.getElementById('new-task-input');
     const addTaskBtnEl = document.getElementById('add-task-btn');
-    const themeToggleBtn = document.getElementById('theme-toggle'); // Header theme toggle
+    const themeToggleBtn = document.getElementById('theme-toggle');
     const themeIcon = themeToggleBtn?.querySelector('i');
     const progressBarEl = document.getElementById('progress-bar');
     const progressTextEl = document.getElementById('progress-text');
     const welcomeMessageEl = document.getElementById('welcome-message');
     const currentYearEl = document.getElementById('current-year');
     const emptyStateEl = document.getElementById('empty-state');
-    const bodyEl = document.body; // Get body element
+    const bodyEl = document.body;
 
-    // Mobile Menu Elements
     const mobileMenuToggleBtn = document.getElementById('mobile-menu-toggle');
     const sidebarEl = document.getElementById('sidebar');
     const sidebarOverlayEl = document.getElementById('sidebar-overlay');
     const sidebarCloseBtnEl = document.getElementById('sidebar-close-btn');
 
-    // View Switching Elements
     const viewContainerEl = document.getElementById('view-container');
-    const mainNavEl = document.getElementById('main-nav'); // Nav container
+    const mainNavEl = document.getElementById('main-nav');
     const dashboardViewEl = document.getElementById('dashboard-view');
     const settingsViewEl = document.getElementById('settings-view');
+    const settingsTitleEl = document.getElementById('settings-title'); // Added for focus management
 
-    // Settings View Elements
-    const themeToggleSettingsBtn = document.getElementById('theme-toggle-settings'); // Settings theme toggle
+    const themeToggleSettingsBtn = document.getElementById('theme-toggle-settings');
     const themeIconSettings = themeToggleSettingsBtn?.querySelector('i');
     const currentThemeNameEl = document.getElementById('current-theme-name');
     const clearAllTasksBtn = document.getElementById('clear-all-tasks-btn');
@@ -87,59 +86,52 @@ document.addEventListener('DOMContentLoaded', () => {
         return counts;
     }
 
-    /**
-     * Updates the main heading with the current category name.
-     */
+    /** Updates the main heading with the current category name. */
     function updateCategoryTitle() {
         if (!currentCategoryTitleEl) return;
         const currentCategory = categories.find(cat => cat.id === currentCategoryId);
         currentCategoryTitleEl.textContent = currentCategory ? currentCategory.name : "Tasks";
     }
 
-    /**
-     * Updates the progress bar and text based on tasks in the current category.
-     * @param {Array} currentTasks - The tasks currently displayed.
-     */
+    /** Updates the progress bar and text based on tasks in the current category. */
     function updateProgressBar(currentTasks) {
         if (!progressBarEl || !progressTextEl) return;
 
         const totalTasks = currentTasks.length;
-        if (totalTasks === 0) {
-            progressBarEl.style.width = '0%';
-            progressTextEl.textContent = 'No tasks in this category';
-            return;
-        }
         const completedTasks = currentTasks.filter(task => task.completed).length;
-        const percentage = Math.round((completedTasks / totalTasks) * 100);
+        let percentage = 0;
+        let progressText = 'No tasks in this category';
 
+        if (totalTasks > 0) {
+            percentage = Math.round((completedTasks / totalTasks) * 100);
+            progressText = `${percentage}% Complete (${completedTasks} of ${totalTasks})`;
+        }
+
+        // Use requestAnimationFrame for smooth visual updates
         requestAnimationFrame(() => {
-             requestAnimationFrame(() => {
-                progressBarEl.style.width = `${percentage}%`;
-             });
+            progressBarEl.style.width = `${percentage}%`;
+            progressBarEl.setAttribute('aria-valuenow', percentage); // Update accessibility attribute
         });
-        progressTextEl.textContent = `${percentage}% Complete (${completedTasks} of ${totalTasks})`;
+        progressTextEl.textContent = progressText;
+        progressTextEl.setAttribute('aria-label', `Progress: ${progressText}`); // More descriptive label
     }
 
-    /**
-     * Sets a dynamic welcome message based on the time of day.
-     */
+    /** Sets a dynamic welcome message based on the time of day. */
     function setWelcomeMessage() {
         if (!welcomeMessageEl) return;
         const hour = new Date().getHours();
         let greeting;
+        // ... (greeting logic remains the same) ...
         if (hour < 5) { greeting = "Working late or starting early?"; }
         else if (hour < 12) { greeting = "Good morning! What's the plan for today?"; }
         else if (hour < 17) { greeting = "Good afternoon! Keep up the momentum."; }
         else if (hour < 21) { greeting = "Good evening! Time to wrap up or wind down?"; }
         else { greeting = "Good night! Hope you had a productive day."; }
         welcomeMessageEl.textContent = greeting;
-        // Trigger CSS fade-in
-        welcomeMessageEl.style.opacity = 1;
+        welcomeMessageEl.style.opacity = 1; // Trigger CSS fade-in if defined
     }
 
-    /**
-     * Sets the current year in the footer.
-     */
+    /** Sets the current year in the footer. */
     function setCurrentYear() {
         if (currentYearEl) {
             currentYearEl.textContent = new Date().getFullYear();
@@ -148,18 +140,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Rendering Functions ---
 
-    /**
-     * Renders the category list in the sidebar, including task counts and active state.
-     */
+    /** Renders the category list in the sidebar. */
     function renderCategories() {
         if (!categoryListEl) return;
-        categoryListEl.innerHTML = '';
+        // Preserve the static settings link if it exists in HTML, clear only dynamic categories
+        const settingsLinkLI = categoryListEl.querySelector('.sidebar-nav-item[data-view="settings"]');
+        const separatorLI = categoryListEl.querySelector('.sidebar-separator');
+
+        // Clear only dynamically added category list items
+        categoryListEl.querySelectorAll('li:not(.sidebar-nav-item):not(.sidebar-separator)')
+            .forEach(li => li.remove());
+
         const taskCounts = getTaskCounts();
 
         categories.forEach(category => {
             const li = document.createElement('li');
             li.dataset.categoryId = category.id;
-            if (category.id === currentCategoryId) { li.classList.add('active'); }
+            li.classList.add('category-list-item'); // Add a class for easier selection
+            if (category.id === currentCategoryId) {
+                li.classList.add('active');
+                li.setAttribute('aria-current', 'page'); // Indicate current category
+            }
 
             const nameSpan = document.createElement('span');
             nameSpan.classList.add('category-name');
@@ -173,20 +174,28 @@ document.addEventListener('DOMContentLoaded', () => {
             li.appendChild(countSpan);
 
             li.addEventListener('click', () => {
-                currentCategoryId = category.id;
-                renderCategories();
-                renderTasks();
+                if (currentCategoryId !== category.id) {
+                    currentCategoryId = category.id;
+                    switchView('dashboard'); // Ensure dashboard is shown when selecting a category
+                    renderCategories(); // Update active state
+                    renderTasks();      // Render tasks for the new category
+                }
                 closeMobileSidebar(); // Close sidebar after selection
             });
-            categoryListEl.appendChild(li);
+
+             // Insert before the separator/settings link if they exist
+            if (separatorLI) {
+                 categoryListEl.insertBefore(li, separatorLI);
+            } else if (settingsLinkLI) {
+                categoryListEl.insertBefore(li, settingsLinkLI);
+            } else {
+                categoryListEl.appendChild(li);
+            }
         });
-        updateCategoryTitle(); // Update title after rendering categories
+        updateCategoryTitle();
     }
 
-    /**
-     * Renders the tasks for the currently selected category, handles empty state,
-     * updates the progress bar, and initializes drag-and-drop.
-     */
+    /** Renders tasks for the current category. */
     function renderTasks() {
         if (!taskListEl || !emptyStateEl) return;
 
@@ -194,13 +203,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const currentTasks = tasks
             .filter(task => task.categoryId === currentCategoryId)
-            .sort((a, b) => a.order - b.order); // Sort by current order
+            .sort((a, b) => a.order - b.order);
 
-        let listShouldBeVisible = currentTasks.length > 0;
+        const listShouldBeVisible = currentTasks.length > 0;
 
         if (listShouldBeVisible) {
             emptyStateEl.style.display = 'none';
-            taskListEl.style.display = 'block'; // Ensure task list UL is visible
+            taskListEl.style.display = 'block';
 
             currentTasks.forEach((task, index) => {
                 const li = document.createElement('li');
@@ -210,134 +219,120 @@ document.addEventListener('DOMContentLoaded', () => {
                     li.classList.add('completed');
                 }
 
-                // Staggered animation via style delay
+                // CSS-based animation is generally preferred, but keeping JS for now
                 li.style.opacity = 0;
                 li.style.transform = 'translateY(10px)';
                 setTimeout(() => {
-                   li.style.opacity = 1;
-                   li.style.transform = 'translateY(0)';
-                   li.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
+                    li.style.opacity = 1;
+                    li.style.transform = 'translateY(0)';
+                    li.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
                 }, index * 60); // Stagger delay
 
-                // Checkbox
                 const checkbox = document.createElement('input');
                 checkbox.type = 'checkbox';
                 checkbox.checked = task.completed;
-                checkbox.setAttribute('aria-label', `Mark task "${task.text}" as ${task.completed ? 'incomplete' : 'complete'}`);
+                checkbox.id = `task-${task.id}`; // Add id for label association
+                checkbox.setAttribute('aria-labelledby', `task-label-${task.id}`);
                 checkbox.addEventListener('change', () => toggleTaskCompletion(task.id));
 
-                // Task Text
                 const span = document.createElement('span');
                 span.classList.add('task-text');
                 span.textContent = task.text;
+                span.id = `task-label-${task.id}`; // Label text associated with checkbox
 
-                // Delete Button
+                // Use a dedicated label element for better accessibility
+                // const label = document.createElement('label');
+                // label.htmlFor = `task-${task.id}`;
+                // label.appendChild(span); // Wrap the text span in the label
+
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.classList.add('delete-btn');
-                deleteBtn.setAttribute('aria-label', `Delete task "${task.text}"`);
-                deleteBtn.innerHTML = "<i class='bx bx-trash'></i>";
+                deleteBtn.setAttribute('aria-label', `Delete task: ${task.text}`); // More specific label
+                deleteBtn.innerHTML = "<i class='bx bx-trash' aria-hidden='true'></i>"; // Hide icon from screen reader
                 deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent triggering potential parent listeners
+                    e.stopPropagation();
                     deleteTask(task.id);
                 });
 
                 li.appendChild(checkbox);
-                li.appendChild(span);
+                li.appendChild(span); // Add span directly (or wrap in label as commented above)
                 li.appendChild(deleteBtn);
                 taskListEl.appendChild(li);
             });
         } else {
-            emptyStateEl.style.display = 'flex'; // Use flex for centering icon/text
+            emptyStateEl.style.display = 'flex';
             taskListEl.style.display = 'none';
         }
 
         updateProgressBar(currentTasks);
-        initializeSortable(listShouldBeVisible); // Initialize SortableJS based on visibility
+        initializeSortable(listShouldBeVisible);
     }
 
 
     // --- SortableJS ---
 
-    /**
-     * Initializes or re-initializes SortableJS for drag-and-drop functionality.
-     * @param {boolean} listShouldBeVisible - Indicates if the task list currently has items.
-     */
+    /** Initializes SortableJS for drag-and-drop. */
     function initializeSortable(listShouldBeVisible) {
-        // Always destroy the previous instance to prevent memory leaks or duplicate listeners
         if (sortableInstance) {
             sortableInstance.destroy();
             sortableInstance = null;
         }
 
-        // Only initialize SortableJS if the list element exists AND it's currently visible/populated AND Sortable is loaded
         if (taskListEl && listShouldBeVisible && typeof Sortable !== 'undefined') {
-            try { // Add try...catch for extra safety
+            try {
                 sortableInstance = new Sortable(taskListEl, {
-                    animation: 150, // ms animation speed
-                    ghostClass: 'sortable-ghost', // Class name for the drop placeholder
-                    chosenClass: 'sortable-chosen', // Class name for the chosen item
-                    dragClass: 'sortable-drag', // Class name for the dragging item
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    handle: '.task-text', // Optionally allow dragging only by text
                     onEnd: function (evt) {
-                        // evt.oldIndex — element's old index within parent
-                        // evt.newIndex — element's new index within parent
-                        if (evt.oldIndex !== evt.newIndex) { // Only update if position actually changed
-                             updateTaskOrder(evt.oldIndex, evt.newIndex);
+                        if (evt.oldIndex !== evt.newIndex) {
+                            updateTaskOrder(evt.oldIndex, evt.newIndex);
                         }
                     },
                 });
             } catch (error) {
                 console.error("Error initializing SortableJS:", error);
-                // Handle error appropriately, maybe disable drag-and-drop
             }
         }
     }
 
-    /**
-     * Updates the `order` property in the main `tasks` array after a drag-and-drop operation.
-     * @param {number} oldIndex - The original index of the dragged item within the visible list.
-     * @param {number} newIndex - The new index of the dragged item within the visible list.
-     */
+    /** Updates the `order` property after drag-and-drop. */
     function updateTaskOrder(oldIndex, newIndex) {
-        // Get the tasks currently displayed (filtered for the category and sorted by the current order)
         const currentlyDisplayedTasks = tasks
             .filter(task => task.categoryId === currentCategoryId)
             .sort((a, b) => a.order - b.order);
 
-        // Remove the moved task object from its old position in this temporary, sorted array
         const [movedTaskObject] = currentlyDisplayedTasks.splice(oldIndex, 1);
-
-        // Insert the moved task object into its new position in the temporary array
         currentlyDisplayedTasks.splice(newIndex, 0, movedTaskObject);
 
-        // Re-assign the 'order' property sequentially based on the new array sequence
+        // Re-assign order sequentially based on the new array sequence
         currentlyDisplayedTasks.forEach((taskData, index) => {
-            // Find the corresponding task in the main 'tasks' array using its ID
             const taskToUpdate = tasks.find(t => t.id === taskData.id);
             if (taskToUpdate) {
-                taskToUpdate.order = index + 1; // Re-assign order starting from 1
+                taskToUpdate.order = index + 1;
             }
         });
-        // Data model is updated. SortableJS handled the visual DOM change.
+         // TODO: Consider saving the updated 'tasks' array to localStorage here if persistence is needed.
+         console.log("Task order updated in memory.");
     }
 
 
     // --- Task Actions ---
 
-    /**
-     * Adds a new task based on the input field value.
-     */
+    /** Adds a new task. */
     function addTask() {
         if (!newTaskInputEl) return;
         const taskText = newTaskInputEl.value.trim();
         if (taskText === '') {
-             newTaskInputEl.focus();
-             // Add shake animation class
-             newTaskInputEl.classList.add('input-error-shake');
-             setTimeout(() => newTaskInputEl.classList.remove('input-error-shake'), 500);
+            newTaskInputEl.focus();
+            newTaskInputEl.classList.add('input-error-shake');
+            setTimeout(() => newTaskInputEl.classList.remove('input-error-shake'), 500);
             return;
         }
 
-        // Determine the next order number for the current category
         const currentTasks = tasks.filter(task => task.categoryId === currentCategoryId);
         const maxOrder = currentTasks.reduce((max, task) => Math.max(max, task.order || 0), 0);
 
@@ -350,50 +345,55 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         tasks.push(newTask);
-        newTaskInputEl.value = ''; // Clear input field
-        renderTasks(); // Re-render tasks to show the new one
-        renderCategories(); // Re-render categories to update task counts
+        // TODO: Consider saving the updated 'tasks' array to localStorage here.
+        newTaskInputEl.value = '';
+        renderTasks();
+        renderCategories(); // Update counts
     }
 
-    /**
-     * Toggles the completion status of a task.
-     * @param {number} taskId - The ID of the task to toggle.
-     */
+    /** Toggles the completion status of a task. */
     function toggleTaskCompletion(taskId) {
         const task = tasks.find(t => t.id === taskId);
         if (task) {
             task.completed = !task.completed;
+            // TODO: Consider saving the updated 'tasks' array to localStorage here.
             renderTasks(); // Re-render tasks (updates style, progress bar)
             renderCategories(); // Re-render categories (updates counts)
+
+            // Optional: Announce change to screen readers
+            // const taskItem = taskListEl?.querySelector(`li.task-item[data-task-id="${taskId}"] .task-text`);
+            // announce(`${taskItem?.textContent} marked as ${task.completed ? 'complete' : 'incomplete'}.`);
         }
     }
 
-    /**
-     * Deletes a task with a fade-out animation.
-     * @param {number} taskId - The ID of the task to delete.
-     */
-     function deleteTask(taskId) {
+    /** Deletes a task with animation. */
+    function deleteTask(taskId) {
         const taskItem = taskListEl?.querySelector(`li.task-item[data-task-id="${taskId}"]`);
 
-        if(taskItem) {
-             // Apply animation styles
-             taskItem.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out, margin-bottom 0.3s ease-out, padding 0.3s ease-out, height 0.3s ease-out';
-             taskItem.style.opacity = '0';
-             taskItem.style.transform = 'translateX(-30px)';
-             // Animate height/margins for smoother collapse
-             taskItem.style.marginBottom = '0';
-             taskItem.style.paddingTop = '0';
-             taskItem.style.paddingBottom = '0';
-             taskItem.style.height = '0';
+        if (taskItem) {
+            taskItem.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out, margin-bottom 0.3s ease-out, padding 0.3s ease-out, height 0.3s ease-out';
+            taskItem.style.opacity = '0';
+            taskItem.style.transform = 'translateX(-30px)';
+            taskItem.style.marginBottom = '0';
+            taskItem.style.paddingTop = '0';
+            taskItem.style.paddingBottom = '0';
+            // Set height explicitly to current height, then animate to 0
+            taskItem.style.height = `${taskItem.offsetHeight}px`;
+            requestAnimationFrame(() => {
+                 taskItem.style.height = '0';
+            });
 
-             // Wait for animation before removing data and re-rendering
-             setTimeout(() => {
-                 tasks = tasks.filter(t => t.id !== taskId);
-                 renderTasks();      // Re-render tasks
-                 renderCategories(); // Re-render categories
+
+            setTimeout(() => {
+                tasks = tasks.filter(t => t.id !== taskId);
+                // TODO: Consider saving the updated 'tasks' array to localStorage here.
+                renderTasks();
+                renderCategories();
+                // Optional: Announce deletion
+                // announce(`Task deleted.`);
             }, 300); // Match CSS transition duration
         } else {
-            // Fallback if item not found
+            // Fallback if item not found (shouldn't normally happen)
             tasks = tasks.filter(t => t.id !== taskId);
             renderTasks();
             renderCategories();
@@ -402,25 +402,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Theme Management ---
 
-    /**
-     * Toggles the dark/light theme on the body element.
-     */
+    /** Toggles the dark/light theme. */
     function toggleTheme() {
         bodyEl.classList.toggle('dark-theme');
         const isDarkMode = bodyEl.classList.contains('dark-theme');
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-        updateThemeIconsAndText(isDarkMode); // Update all relevant UI elements
+        updateThemeIconsAndText(isDarkMode);
     }
 
-    /**
-     * Updates all theme-related icons and text elements.
-     * @param {boolean} isDarkMode - Whether dark mode is currently active.
-     */
+    /** Updates theme icons and text. */
     function updateThemeIconsAndText(isDarkMode) {
         const themeName = isDarkMode ? 'Dark' : 'Light';
-        const moonIconClass = 'bx-moon';
-        const sunIconClass = 'bx-sun';
-        const newIconClass = `bx ${isDarkMode ? sunIconClass : moonIconClass}`;
+        const newIconClass = `bx ${isDarkMode ? 'bx-sun' : 'bx-moon'}`;
         const newAriaLabel = `Switch to ${isDarkMode ? 'Light' : 'Dark'} Theme`;
 
         // Update header button
@@ -435,156 +428,197 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentThemeNameEl) { currentThemeNameEl.textContent = themeName; }
     }
 
-    /**
-     * Applies the theme preference saved in localStorage on page load.
-     */
+    /** Applies the saved theme on load. */
     function applySavedTheme() {
         const savedTheme = localStorage.getItem('theme');
-        const isDarkMode = savedTheme === 'dark';
+        // Optional: Check for system preference if no theme is saved
+        // const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDarkMode = savedTheme === 'dark'; // || (savedTheme === null && prefersDark);
+
         if (isDarkMode) { bodyEl.classList.add('dark-theme'); }
         else { bodyEl.classList.remove('dark-theme'); }
-        updateThemeIconsAndText(isDarkMode); // Set correct icons/text on load
+        updateThemeIconsAndText(isDarkMode);
     }
 
     // --- Mobile Sidebar ---
 
-    /**
-     * Opens the mobile sidebar menu.
-     */
+    /** Opens the mobile sidebar. */
     function openMobileSidebar() {
-        if (sidebarEl && sidebarOverlayEl) {
-            sidebarEl.classList.add('active');
-            sidebarOverlayEl.classList.add('active');
-            bodyEl.style.overflow = 'hidden'; // Prevent background scroll
-        }
+        if (!sidebarEl || !sidebarOverlayEl || !mobileMenuToggleBtn) return;
+        sidebarEl.classList.add('active');
+        sidebarOverlayEl.classList.add('active'); // Show overlay
+        sidebarOverlayEl.setAttribute('aria-hidden', 'false');
+        mobileMenuToggleBtn.setAttribute('aria-expanded', 'true'); // Update aria state
+        bodyEl.style.overflow = 'hidden'; // Prevent background scroll
+        sidebarCloseBtnEl?.focus(); // Move focus to close button
     }
 
-    /**
-     * Closes the mobile sidebar menu.
-     */
+    /** Closes the mobile sidebar. */
     function closeMobileSidebar() {
-         if (sidebarEl && sidebarOverlayEl) {
-            sidebarEl.classList.remove('active');
-            sidebarOverlayEl.classList.remove('active');
-            bodyEl.style.overflow = ''; // Restore background scroll
-        }
+        if (!sidebarEl || !sidebarOverlayEl || !mobileMenuToggleBtn) return;
+        sidebarEl.classList.remove('active');
+        sidebarOverlayEl.classList.remove('active'); // Hide overlay
+        sidebarOverlayEl.setAttribute('aria-hidden', 'true');
+        mobileMenuToggleBtn.setAttribute('aria-expanded', 'false'); // Update aria state
+        bodyEl.style.overflow = ''; // Restore background scroll
+        mobileMenuToggleBtn.focus(); // Return focus to the toggle button
     }
 
     // --- View Switching ---
 
     /**
-     * Switches the visible view between Dashboard and Settings using CSS class.
-     * @param {string} viewName - The name of the view to switch to ('dashboard' or 'settings').
+     * Switches the visible view between Dashboard and Settings.
+     * IMPORTANT: Relies on CSS rules associated with '.settings-active' on '#view-container'
+     * to handle the actual showing/hiding and animation (e.g., the flip effect).
+     * @param {string} viewName - 'dashboard' or 'settings'.
      */
     function switchView(viewName) {
-        if (!viewContainerEl || !mainNavEl) return;
+        if (!viewContainerEl || !mainNavEl || !dashboardViewEl || !settingsViewEl) {
+            console.error("View switching elements not found.");
+            return;
+        }
 
-        const targetView = viewName === 'settings' ? settingsViewEl : dashboardViewEl;
-        const otherView = viewName === 'settings' ? dashboardViewEl : settingsViewEl;
+        const isSwitchingToSettings = viewName === 'settings';
 
-        // Update Nav Link Active State
+        // 1. Update Nav Link Active State in Header
         mainNavEl.querySelectorAll('.nav-link').forEach(link => {
             link.classList.toggle('active', link.dataset.view === viewName);
+             link.setAttribute('aria-current', link.dataset.view === viewName ? 'page' : 'false');
         });
 
-        // Toggle active class on container for CSS flip animation
-        if (viewName === 'settings') {
-            viewContainerEl.classList.add('settings-active');
-            // Ensure settings view is not display:none (handled by CSS transform now)
-            // if (settingsViewEl) settingsViewEl.classList.remove('is-hidden'); // May not be needed if CSS handles visibility via transform
+        // 2. Toggle the controlling class on the container
+        viewContainerEl.classList.toggle('settings-active', isSwitchingToSettings);
+
+        // 3. Accessibility & Focus Management
+        if (isSwitchingToSettings) {
+            dashboardViewEl.setAttribute('aria-hidden', 'true');
+            settingsViewEl.setAttribute('aria-hidden', 'false');
+            // Move focus to the settings heading after transition (adjust timeout if needed)
+            setTimeout(() => settingsTitleEl?.focus(), 600); // Match potential CSS transition duration
         } else { // Switching back to dashboard
-            viewContainerEl.classList.remove('settings-active');
+            dashboardViewEl.setAttribute('aria-hidden', 'false');
+            settingsViewEl.setAttribute('aria-hidden', 'true');
+             // Move focus back to the category title or another relevant element
+            setTimeout(() => currentCategoryTitleEl?.focus(), 600);
         }
+
+        // 4. Ensure mobile sidebar is closed when switching views explicitly
+        closeMobileSidebar();
+
         console.log(`Switched view to: ${viewName}`);
     }
 
+
     // --- Settings Actions ---
 
-    /**
-     * Clears all tasks from the data array after confirmation.
-     */
+    /** Clears all tasks after confirmation. */
     function clearAllTasks() {
-        // Confirmation dialog
         if (confirm("Are you sure you want to delete ALL tasks in ALL categories? This cannot be undone.")) {
-            tasks = []; // Clear the tasks array
-            // Optionally reset categories or keep them
-            currentCategoryId = categories[0]?.id || 1; // Reset to first category ID if categories exist
-            nextTaskId = 1; // Reset task ID counter
-            renderCategories(); // Update counts (will be 0)
-            renderTasks();      // Update task list (will show empty state)
+            tasks = [];
+            currentCategoryId = categories[0]?.id || 1;
+            nextTaskId = 1;
+            // TODO: Clear tasks from localStorage if persistence is implemented.
+            renderCategories();
+            renderTasks();
             alert("All tasks cleared.");
+            // Optional: Announce change
+            // announce("All tasks have been cleared.");
         }
     }
 
+    // --- Utility Functions ---
+    // Example function to announce changes to screen readers (requires a live region in HTML)
+    /*
+    const screenReaderAnnouncer = document.getElementById('sr-announcer'); // Add <div id="sr-announcer" aria-live="polite" class="sr-only"></div> to HTML
+    function announce(message) {
+        if (screenReaderAnnouncer) {
+            screenReaderAnnouncer.textContent = message;
+        }
+    }
+    */
+
     // --- Event Listeners ---
-    // Add guards to prevent errors if elements don't exist
-    if (addTaskBtnEl) {
-        addTaskBtnEl.addEventListener('click', addTask);
-    }
-    if (newTaskInputEl) {
-        newTaskInputEl.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addTask();
+    function setupEventListeners() {
+        if (addTaskBtnEl) addTaskBtnEl.addEventListener('click', addTask);
+        if (newTaskInputEl) {
+            newTaskInputEl.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addTask();
+            });
+        }
+
+        if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // Mobile Menu
+        if (mobileMenuToggleBtn) mobileMenuToggleBtn.addEventListener('click', openMobileSidebar);
+        if (sidebarCloseBtnEl) sidebarCloseBtnEl.addEventListener('click', closeMobileSidebar);
+        if (sidebarOverlayEl) sidebarOverlayEl.addEventListener('click', closeMobileSidebar);
+
+        // View Switching (Header Nav - Event Delegation)
+        if (mainNavEl) {
+            mainNavEl.addEventListener('click', (e) => {
+                const targetLink = e.target.closest('.nav-link[data-view]');
+                if (targetLink && !targetLink.classList.contains('active')) { // Only switch if not already active
+                    e.preventDefault();
+                    switchView(targetLink.dataset.view);
+                }
+            });
+        }
+
+        // View Switching (Sidebar Settings Link - Event Delegation on category list)
+        if (categoryListEl) {
+             categoryListEl.addEventListener('click', (e) => {
+                 const settingsLink = e.target.closest('.sidebar-nav-item[data-view="settings"]');
+                 if (settingsLink) {
+                     e.preventDefault();
+                     switchView('settings'); // Use the switchView function
+                     // closeMobileSidebar(); // switchView already calls this
+                 }
+                 // Category item clicks are handled directly on the LI elements during render
+             });
+        }
+
+
+        // Settings View
+        if (themeToggleSettingsBtn) themeToggleSettingsBtn.addEventListener('click', toggleTheme);
+        if (clearAllTasksBtn) clearAllTasksBtn.addEventListener('click', clearAllTasks);
+        if (backToDashboardBtn) {
+            // Use data-view attribute from HTML instead of direct listener if preferred
+             backToDashboardBtn.addEventListener('click', () => switchView('dashboard'));
+        }
+
+         // Close sidebar on Escape key press
+         document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape" && sidebarEl?.classList.contains('active')) {
+                closeMobileSidebar();
             }
         });
-    }
-    if (themeToggleBtn) { // Header toggle
-        themeToggleBtn.addEventListener('click', toggleTheme);
-    }
-
-    // Mobile Menu Listeners
-    if (mobileMenuToggleBtn) {
-        mobileMenuToggleBtn.addEventListener('click', openMobileSidebar);
-    }
-    if (sidebarCloseBtnEl) {
-        sidebarCloseBtnEl.addEventListener('click', closeMobileSidebar);
-    }
-    if (sidebarOverlayEl) {
-        sidebarOverlayEl.addEventListener('click', closeMobileSidebar);
-    }
-
-    // View Switching Listener (using event delegation on nav)
-    if (mainNavEl) {
-        mainNavEl.addEventListener('click', (e) => {
-            const targetLink = e.target.closest('.nav-link[data-view]'); // Ensure it has data-view
-            if (targetLink) {
-                e.preventDefault(); // Prevent default anchor behavior
-                switchView(targetLink.dataset.view);
-            }
-        });
-    }
-
-    // Settings View Listeners
-    if (themeToggleSettingsBtn) { // Settings toggle
-        themeToggleSettingsBtn.addEventListener('click', toggleTheme);
-    }
-    if (clearAllTasksBtn) {
-        clearAllTasksBtn.addEventListener('click', clearAllTasks);
-    }
-    if (backToDashboardBtn) {
-        backToDashboardBtn.addEventListener('click', () => switchView('dashboard'));
     }
 
 
     // --- Initial Setup ---
 
-    /**
-     * Initializes the application: applies theme, sets static content, renders dynamic content.
-     */
+    /** Initializes the application. */
     function initializeApp() {
-        // Remove preload class shortly after load to enable transitions
+        // Remove preload class after styles are potentially applied and ready for transitions
         window.addEventListener('load', () => {
-           setTimeout(() => bodyEl.classList.remove('preload'), 100); // Small delay
+           setTimeout(() => bodyEl.classList.remove('preload'), 100);
         });
 
-        applySavedTheme();    // Apply theme first
+        applySavedTheme();
         setWelcomeMessage();
         setCurrentYear();
-        renderCategories();   // Render categories
-        renderTasks();        // Then render tasks for the default category
+        renderCategories(); // Render categories first
+        renderTasks();      // Then render tasks for the default category
+        setupEventListeners(); // Setup listeners after initial render
         console.log("SereneList Initialized.");
+
+        // Set initial aria-hidden states for views
+        if (dashboardViewEl) dashboardViewEl.setAttribute('aria-hidden', 'false');
+        if (settingsViewEl) settingsViewEl.setAttribute('aria-hidden', 'true');
+        if (sidebarOverlayEl) sidebarOverlayEl.setAttribute('aria-hidden', 'true');
+        if (mobileMenuToggleBtn) mobileMenuToggleBtn.setAttribute('aria-expanded', 'false');
     }
 
-    initializeApp(); // Run the initialization sequence
+    initializeApp(); // Run the initialization
 
 }); // End of DOMContentLoaded
