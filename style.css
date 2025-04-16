@@ -130,7 +130,7 @@ i.bx { font-size: 1.3em; vertical-align: middle; }
 .btn-secondary { background-color: var(--bg-main); color: var(--text-secondary); font-weight: 500; padding: calc(var(--spacing-unit) * 0.7) calc(var(--spacing-unit) * 1.5); border: 1px solid var(--border); border-radius: var(--border-radius); box-shadow: 0 1px 3px var(--shadow); transition: all 0.2s ease-out; }
 .btn-secondary:hover { border-color: var(--text-secondary); color: var(--text-primary); background-color: var(--progress-bg); }
 .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; background-color: var(--progress-bg); border-color: var(--border); }
-.btn-danger { background-color: #e74c3c; color: white; font-weight: 500; padding: calc(var(--spacing-unit) * 0.7) calc(var(--spacing-unit) * 1.5); border: none; border-radius: var(--border-radius); box-shadow: 0 2px 5px rgba(231, 76, 60, 0.2); transition: all 0.2s ease-out; }
+.btn-danger { max-width: 230px; background-color: #e74c3c; color: white; font-weight: 500; padding: calc(var(--spacing-unit) * 0.7) calc(var(--spacing-unit) * 1.5); border: none; border-radius: var(--border-radius); box-shadow: 0 2px 5px rgba(231, 76, 60, 0.2); transition: all 0.2s ease-out; }
 .btn-danger:hover { background-color: #c0392b; box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3); transform: translateY(-1px); }
 
 /* --- App Header --- */
@@ -280,7 +280,8 @@ body.dark-theme .welcome-message { background-color: rgba(var(--accent-primary-d
 /* --- Settings View (Desktop & Content) --- */
 /* Settings view inherits .view styles and has its own padding/scrolling/visibility */
 .settings-content {
-    max-width: 700px;
+    max-width: 1000px;
+    max-height: 700px;
     margin: 0 auto; /* Center content horizontally */
     padding: var(--spacing-unit);
     background-color: var(--bg-main);
@@ -309,11 +310,18 @@ body.dark-theme .welcome-message { background-color: rgba(var(--accent-primary-d
 .setting-item .theme-options { display: flex; align-items: center; gap: var(--spacing-unit); }
 .setting-item .theme-options .theme-toggle-btn { font-size: 1.5rem; }
 .warning-text { font-size: 0.85rem; color: var(--accent-secondary); margin-top: calc(var(--spacing-unit)*0.5); }
-#back-to-dashboard-btn { margin-top: 0px !important; display: block; margin-left: auto; margin-right: auto; }
+#back-to-dashboard-btn { margin-top: 0px !important; display: block; margin-left: 450px; margin-right: auto; }
 
 /* --- App Footer --- */
 /* ... (Footer styles remain the same) ... */
 .app-footer { height: var(--footer-height); text-align: center; padding: var(--spacing-unit) 0; color: var(--text-secondary); font-size: 0.9rem; border-top: 1px solid var(--border); background-color: var(--bg-container); width: 100%; margin-top: auto; flex-shrink: 0; }
+
+.grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Three columns: 200px, 1fr, 1fr */
+      grid-template-rows: 1fr;
+      justify-content: center; 
+}
 
 /* --- Responsiveness Adjustments --- */
 @media (max-width: 992px) {
@@ -338,7 +346,13 @@ body.dark-theme .welcome-message { background-color: rgba(var(--accent-primary-d
         padding-top: var(--header-height);
         perspective: none;
     }
-
+    #back-to-dashboard-btn { margin-top: 0px !important; display: block; margin-left: 0px; margin-right: auto; }
+    .grid{
+        display: grid;
+        grid-template-columns: 1fr; /* Three columns: 200px, 1fr, 1fr */
+          grid-template-rows: 1fr 1fr;
+          justify-content: center; 
+    }
     /* --- Mobile View Switching: Use display toggle --- */
     .view {
         position: relative;
